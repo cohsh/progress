@@ -4,7 +4,7 @@ require 'set'
 def get_all_extensions(dir = '.')
 extensions = Set.new
 Dir.glob("#{dir}/**/*.*") do |file|
-    ext = File.extname(file)
+    ext = File.extname(file).sub(/^\./, '')
     extensions.add(ext) unless ext.empty?
 end
 extensions.to_a
