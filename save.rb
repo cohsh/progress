@@ -13,8 +13,9 @@ extensions = get_all_extensions
 extensions.each do |extension|
 
     # Construct LineCounter instance and execute the count
-    counter = LineCounter.new(file_path, extension)
+    counter = FileStatsCounter.new(file_path, extension)
     total_lines = counter.count_lines
+    total_file_size = counter.count_file_size
 
     # Prepare the directory path for the progress files
     progress_dir = File.join('.progress', extension)
@@ -23,16 +24,20 @@ extensions.each do |extension|
     FileUtils.mkdir_p(progress_dir)
 
     # Prepare the file path for writing the data
-    progress_file_path = File.join(progress_dir, 'lines.csv')
+    lines_progress_file_path = File.join(progress_dir, 'lines.csv')
+    size_progress_file_path = File.join(progress_dir, 'size.csv')
 
-    puts "#{progress_file_path}"
-
-    # Open the file in append mode and write the datetime and line count
-    File.open(progress_file_path, 'a') do |file|
+    # Open the file in append mode and write the datetime and data
+    File.open(lines_progress_file_path, 'a') do |file|
         file.puts "#{DateTime.now},#{total_lines}"
+    end
+
+    File.open(size_progress_file_path, 'a') do |file|
+        file.puts "#{DateTime.now},#{total_file_size}"
     end
 
     # Print the result
     puts "Total lines in #{extension.empty? ? "all files" : ".#{extension} files"}: #{total_lines}"
+    puts "Total lines in #{extension.empty? ? "all size" : ".#{extension} byte"}: #{total_file_size}"
 
 end

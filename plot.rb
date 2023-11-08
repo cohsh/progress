@@ -6,31 +6,39 @@ require_relative './lib/extension_finder'
 
 extensions = get_all_extensions
 
-extensions.each_with_index do |extension, index|
-    # Generate a new Gruff object
-    g = Gruff::Line.new
-    g.title = "Progress about #{extension}"
+stats_to_count = ['lines', 'size']
 
-    # Set CSV file path
-    csv_file_path = File.join('.progress', extension, 'lines.csv')
+stats_to_count.each do |stat|
+    extensions.each_with_index do |extension, index|
+        # Generate a new Gruff object
+        g = Gruff::Line.new
+        g.title = "Progress about #{extension}"
 
-    unless File.exist?(csv_file_path)
-        puts "CSV file for #{extension} does not exist. Skip."
-        next
+        # Set CSV file path
+        csv_file_path = File.join('.progress', extension, "#{stat}.csv")
+
+        unless File.exist?(csv_file_path)
+            puts "CSV file for #{extension} does not exist. Skip."
+            next
+        end
+
+        # Read data from csv
+        datetimes, line_counts = read_csv_data(csv_file_path)
+        
+        # Append data
+        g.data("# of #{stat}", line_counts)
+
+        # Set labels
+        labels = {}
+        datetimes.each_with_index { |datetime, i| labels[i] = datetime.strftime('%Y-%m-%d %H:%M') }
+        g.labels = labels        
+
+        # Make graph directory
+        graph_directory = File.join('.progress', extension, 'graphs')
+        FileUtils.mkdir_p(graph_directory)
+
+        # Write graph to file
+        png_path = File.join(graph_directory, "#{stat}.png")
+        g.write(png_path)
     end
-
-    # Read data from csv
-    datetimes, line_counts = read_csv_data(csv_file_path)
-    
-    # Append data
-    g.data("# of lines", line_counts)
-
-    # Set labels
-    labels = {}
-    datetimes.each_with_index { |datetime, i| labels[i] = datetime.strftime('%Y-%m-%d %H:%M') }
-    g.labels = labels        
-
-    # Write graph to file
-    png_path = File.join('.progress', extension, 'graph.png')
-    g.write(png_path)
 end

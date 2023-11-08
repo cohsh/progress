@@ -1,8 +1,6 @@
-# Require the 'find' library to traverse directories
 require 'find'
 
-# Class to count lines in files within a given directory or file, with or without a certain extension
-class LineCounter
+class FileStatsCounter
   attr_reader :path, :extension
 
   def initialize(path, extension = nil)
@@ -11,19 +9,40 @@ class LineCounter
   end
 
   # Counts lines in the specified path
-  # If the path is a directory, it counts lines in all files with the specified extension, or all files if no extension is specified.
-  # If the path is a file, it counts lines only if the file has the specified extension, or counts for any file if no extension is specified.
   def count_lines
     line_count = 0
-    if File.directory?(@path)
-      Find.find(@path) do |path|
-        if File.file?(path) && (@extension.nil? || @extension.empty? || File.extname(path) == ".#{@extension}")
-          line_count += File.readlines(path).size
-        end
-      end
-    elsif File.file?(@path) && (@extension.nil? || @extension.empty? || File.extname(@path) == ".#{@extension}")
-      line_count = File.readlines(@path).size
+    process_files do |file|
+      line_count += File.readlines(file).size
     end
     line_count
+  end
+
+  # Counts the total size of files in the specified path
+  def count_file_size
+    file_size = 0
+    process_files do |file|
+      file_size += File.size(file)
+    end
+    file_size
+  end
+
+  private
+
+  # Process files with the given block
+  def process_files
+    if File.directory?(@path)
+      Find.find(@path) do |file|
+        if File.file?(file) && extension_match?(file)
+          yield(file)
+        end
+      end
+    elsif File.file?(@path) && extension_match?(@path)
+      yield(@path)
+    end
+  end
+
+  # Checks if the file matches the specified extension
+  def extension_match?(file_path)
+    @extension.nil? || @extension.empty? || File.extname(file_path) == ".#{@extension}"
   end
 end
