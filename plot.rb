@@ -30,7 +30,7 @@ stats_to_count.each do |stat|
 
         # Set labels
         labels = {}
-        datetimes.each_with_index { |datetime, i| labels[i] = datetime.strftime('%Y-%m-%d %H:%M') }
+        datetimes.each_with_index { |datetime, i| labels[i] = datetime.strftime('%m/%d') }
         g.labels = labels        
 
         # Make graph directory
