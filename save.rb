@@ -5,8 +5,9 @@ require 'fileutils'
 require_relative './lib/counters'
 require_relative './lib/extension_finder'
 
-# Get the file path and extension from command line args
+# Get the file path from command line args or set to current directory if not provided
 file_path = ARGV[0]
+file_path = '.' if file_path.nil? || file_path.empty?
 
 extensions = get_all_extensions
 
